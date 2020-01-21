@@ -1,9 +1,10 @@
 #include<iostream>
 #include<fstream>
 #include<string>
-
+#include "SimplePocoHandler.h"
 
 void ReadTemperatureFromFile();
+void SendTemperature();
 
 float temperature;
 
@@ -13,6 +14,8 @@ int main()
 {
 	cout<<"Calling file read procedure"<<endl;
 	ReadTemperatureFromFile();
+	SendTemperature();
+	
 	return 0;
 }
 
@@ -45,3 +48,25 @@ void ReadTemperatureFromFile() {
 	}
 
 }
+
+void SendTemperature() 
+{
+	SimplePocoHandler handler("localhost", 5672);
+	
+	AMQP::Connection connection(&handler, AMQP::Login("guest", "guest"), "/");
+	AMQP::Channel channel(&connection);
+	
+	channel.onReady([&]()
+	{
+		if(handler.connected())
+		{
+			channel.publish("", "hello", "Hello World!");
+			cout << " [x] Sent 'Hello World!" << endl;
+			handler.quit();
+		}
+	});
+	
+	handler.loop();
+}
+
+
