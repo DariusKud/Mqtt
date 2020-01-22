@@ -13,9 +13,9 @@ int main()
 {
 	while(1)
 	{
+		time_t laikas = time(NULL);
   try
   {
-	time_t laikas = time(NULL);
     auto channel = AmqpClient::Channel::Create();
     channel->DeclareQueue(QUEUE_NAME, false, true, false, true);
     auto consumerTag = channel->BasicConsume(QUEUE_NAME);
