@@ -1,27 +1,37 @@
-#include<iostream>
-#include<fstream>
-#include<string>
-#include "SimplePocoHandler.h"
+#pragma warning(push, 0)
+#include <SimpleAmqpClient/SimpleAmqpClient.h>
+#pragma warning(pop)
 
-void ReadTemperatureFromFile();
+#include <iostream>
+#include <fstream>
+#include <time.h>
+
+
+void ReadTemperature();
 void SendTemperature();
-
-float temperature;
 
 using namespace std;
 
+constexpr auto QUEUE_NAME = "temperature";
+
+float temperature;
+string ans;
+time_t laikas = time(NULL);
+
 int main()
 {
-	cout<<"Calling file read procedure"<<endl;
-	ReadTemperatureFromFile();
-	SendTemperature();
 	
-	return 0;
+	while(1)
+	{
+	ReadTemperature();
+	SendTemperature();
+	sleep(300);
+	}
+  return 0; 
 }
 
-void ReadTemperatureFromFile() {
-
-
+void ReadTemperature()
+{
 	const string temperatureString = "t=";
 	cout<<"Reading file..."<<endl;
 	ifstream file ("temperature.txt");
@@ -43,7 +53,8 @@ void ReadTemperatureFromFile() {
 			position = temperatureLine.find(temperatureString);
 			cout << "Temperature index = "<< position << endl;
 			temperature = stof(temperatureLine.substr(position + 2))/1000;
-			cout <<"Temperature = " << temperature <<endl;
+			cout <<"Temperature = " << temperature <<endl<<endl;
+			ans = to_string(temperature).substr(0,6);
 		}
 	}
 
@@ -51,22 +62,10 @@ void ReadTemperatureFromFile() {
 
 void SendTemperature() 
 {
-	SimplePocoHandler handler("localhost", 5672);
-
-    AMQP::Connection connection(&handler, AMQP::Login("guest", "guest"), "/");
-    AMQP::Channel channel(&connection);
-
-    channel.onReady([&]()
-    {
-        if(handler.connected())
-        {
-            channel.publish("", "hello", "Hello World!");
-            std::cout << " [x] Sent 'Hello World!'" << std::endl;
-            handler.quit();
-        }
-    });
-
-    handler.loop();
+	auto channel = AmqpClient::Channel::Create();
+	channel->DeclareQueue(QUEUE_NAME, false, true, false, true);
+	auto message = AmqpClient::BasicMessage::Create(ans);
+	channel->BasicPublish("", QUEUE_NAME, message);
+	clog <<ctime(&laikas)<< "Sent "<< ans <<endl<<endl;
 }
-
 

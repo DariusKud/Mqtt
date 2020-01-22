@@ -1,0 +1,2 @@
+g++ -o MqttReceiver MqttReceiver.cpp -lSimpleAmqpClient -L/usr/lib
+g++ -o MqttProducer MqttProducer.cpp -lSimpleAmqpClient
