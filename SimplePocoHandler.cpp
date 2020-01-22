@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <Poco/Net/StreamSocket.h>
+#include <Poco/Net/StreamSocketImpl.h>
 
 #include "SimplePocoHandler.h"
 
