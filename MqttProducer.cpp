@@ -16,7 +16,6 @@ constexpr auto QUEUE_NAME = "temperature";
 
 float temperature;
 string ans;
-time_t laikas = time(NULL);
 
 int main()
 {
@@ -62,6 +61,7 @@ void ReadTemperature()
 
 void SendTemperature() 
 {
+	time_t laikas = time(NULL);
 	auto channel = AmqpClient::Channel::Create();
 	channel->DeclareQueue(QUEUE_NAME, false, true, false, true);
 	auto message = AmqpClient::BasicMessage::Create(ans);
